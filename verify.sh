@@ -67,7 +67,7 @@ echo "--- Skills ---"
 check "skills/last30days/ submodule exists" "test -d $HOME/.claude/skills/last30days/.git || test -f $HOME/.claude/skills/last30days/.git"
 check "skills/last30days/SKILL.md exists" "test -f $HOME/.claude/skills/last30days/SKILL.md"
 check "skills/last30days/scripts/last30days.py exists" "test -f $HOME/.claude/skills/last30days/scripts/last30days.py"
-check "skills/last30dayshigh/SKILL.md exists" "test -f $HOME/.claude/skills/last30dayshigh/SKILL.md"
+check "skills/last30days/SKILL.md has ultra description" "grep -q 'Ultra-comprehensive' $HOME/.claude/skills/last30days/SKILL.md"
 SP_DIR=$(ls -d $HOME/.claude/plugins/cache/claude-plugins-official/superpowers/*/ 2>/dev/null | head -1)
 if [ -n "$SP_DIR" ]; then pass "Superpowers plugin installed"; else fail "Superpowers plugin not installed"; fi
 check "shell/aliases.zsh exists" "test -f $HOME/.claude/shell/aliases.zsh"

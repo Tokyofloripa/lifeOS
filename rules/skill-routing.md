@@ -9,8 +9,7 @@ When the user's intent matches a pattern below, invoke the corresponding skill B
 
 | User Intent | Skill to Invoke | Trigger Words |
 |------------|----------------|---------------|
-| Research a topic from recent discussions | last30days | "research", "what are people saying", "last 30 days", "trending" |
-| Ultra-comprehensive multi-source research | last30dayshigh | "deep research", "comprehensive search", "exhaustive", "/last30dayshigh" |
+| Research a topic (ultra-comprehensive by default) | last30days | "research", "what are people saying", "last 30 days", "trending", "deep research", "comprehensive search" |
 | Creating features, adding functionality | superpowers:brainstorming | "add", "create", "build", "implement" (new things) |
 | Bug, test failure, unexpected behavior | superpowers:systematic-debugging | "bug", "failing", "broken", "error", "doesn't work" |
 | Writing implementation plans | superpowers:writing-plans | "plan", "design", "architect" (before coding) |

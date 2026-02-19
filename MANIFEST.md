@@ -26,8 +26,7 @@ These files represent our personal infrastructure. Upgrades never touch them.
 | `upgrade.sh` | Check SYSTEM components for updates | 1.1 |
 | `pre-commit-hook.sh` | Git pre-commit secret + PII scanner | 2.0 |
 | `install.sh` | Bootstrap and verify setup | 1.0 |
-| `skills/last30days/` | Multi-source research engine (submodule) | — |
-| `skills/last30dayshigh/SKILL.md` | Ultra-comprehensive research wrapper | 1.0 |
+| `skills/last30days/` | Ultra-comprehensive multi-source research (submodule) | 4.2 |
 | `shell/aliases.zsh` | Shell integration (aliases, worktree helpers) | 1.0 |
 
 ## SYSTEM — Third-Party (installed by install.sh, auto-updated)
