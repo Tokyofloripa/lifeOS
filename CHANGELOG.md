@@ -2,14 +2,16 @@
 
 All notable changes to the Claude Code global configuration.
 
-## 2026-02-19 — Skills as Foundation
+## 2026-02-19 — Skills as Foundation + Skill Consolidation
 
 - Added: skills/last30days/ as git submodule (TokyoFloripa/uptodate)
-- Added: skills/last30dayshigh/SKILL.md tracked directly
 - Added: shell/aliases.zsh (aliases, worktree helpers, skill shortcuts)
+- Merged: last30dayshigh into last30days — ultra is now default (3-4 variants, 6-8 WebSearches)
+- Removed: skills/last30dayshigh/ (redundant after merge)
 - Updated: install.sh — complete bootstrap (submodules, superpowers, MCP, shell)
 - Updated: verify.sh — skill checks (submodule, SKILL.md, scripts, plugin)
 - Updated: MANIFEST.md — skills in USER section, SYSTEM install commands
+- Updated: skill-routing.md — single last30days entry with all trigger words
 - Updated: .gitignore — tracks skills/, ignores only runtime artifacts
 - Updated: ~/.zshrc — sources from lifeOS instead of inline definitions
 
