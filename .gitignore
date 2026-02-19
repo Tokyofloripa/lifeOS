@@ -22,7 +22,10 @@ ide/
 paste-cache/
 plans/
 shell-snapshots/
-skills/
+# Skills runtime artifacts (skills/ itself IS tracked)
+skills/*/.pytest_cache/
+skills/*/__pycache__/
+skills/*/node_modules/
 stats-cache.json
 statusline-command.sh
 tasks/

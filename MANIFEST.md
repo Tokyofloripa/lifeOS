@@ -26,15 +26,18 @@ These files represent our personal infrastructure. Upgrades never touch them.
 | `upgrade.sh` | Check SYSTEM components for updates | 1.1 |
 | `pre-commit-hook.sh` | Git pre-commit secret + PII scanner | 2.0 |
 | `install.sh` | Bootstrap and verify setup | 1.0 |
+| `skills/last30days/` | Multi-source research engine (submodule) | — |
+| `skills/last30dayshigh/SKILL.md` | Ultra-comprehensive research wrapper | 1.0 |
+| `shell/aliases.zsh` | Shell integration (aliases, worktree helpers) | 1.0 |
 
-## SYSTEM — From Plugins/Upstream (safe to update)
+## SYSTEM — Third-Party (installed by install.sh, auto-updated)
 
-Managed by Claude Code plugin marketplace. Run `/plugin update` to refresh.
+Managed by Claude Code plugin marketplace and MCP. Re-run `install.sh` to install/update.
 
-| Path | Source | Update Command |
-|------|--------|---------------|
-| `plugins/cache/claude-plugins-official/superpowers/` | Superpowers v4.3.0 | `/plugin update superpowers` |
-| `plugins/marketplaces/claude-plugins-official/external_plugins/github/` | GitHub MCP plugin | `/plugin update` |
+| Component | Source | Install Command | Update Command |
+|-----------|--------|----------------|---------------|
+| Superpowers | obra/superpowers-marketplace | `/plugin marketplace add obra/superpowers-marketplace` | `/plugin update superpowers` |
+| GitHub MCP | @anthropic-ai/github-mcp-server | `claude mcp add github --scope user` | `claude mcp add github --scope user` |
 
 ## GENERATED — Ephemeral (never version-controlled)
 
