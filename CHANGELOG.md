@@ -2,6 +2,14 @@
 
 All notable changes to the Claude Code global configuration.
 
+## 2026-02-19 — Rename to last60days
+
+- Renamed: GitHub repo TokyoFloripa/uptodate → TokyoFloripa/last60days
+- Renamed: skill directory skills/last30days/ → skills/last60days/
+- Changed: default search window from 30 days to 60 days
+- Merged: last30dayshigh behavior (already done in previous commit)
+- Credit: Based on mvanhorn/last30days-skill (original upstream)
+
 ## 2026-02-19 — Skills as Foundation + Skill Consolidation
 
 - Added: skills/last30days/ as git submodule (TokyoFloripa/uptodate)

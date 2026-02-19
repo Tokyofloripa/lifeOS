@@ -6,10 +6,10 @@ alias cc='claude'
 alias ccp='claude --print'
 alias ccr='claude --resume'
 
-# last30days skill shortcuts
-alias l30test='python3 ~/.claude/skills/last30days/scripts/last30days.py "test" --mock --emit=compact'
-alias l30diag='python3 ~/.claude/skills/last30days/scripts/last30days.py --diagnose'
-alias l30tests='python3 -m pytest ~/.claude/skills/last30days/tests/ -q'
+# last60days skill shortcuts
+alias l60test='python3 ~/.claude/skills/last60days/scripts/last30days.py "test" --mock --emit=compact'
+alias l60diag='python3 ~/.claude/skills/last60days/scripts/last30days.py --diagnose'
+alias l60tests='python3 -m pytest ~/.claude/skills/last60days/tests/ -q'
 
 # Worktree helpers
 claude-wt() {

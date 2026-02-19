@@ -9,7 +9,7 @@ When the user's intent matches a pattern below, invoke the corresponding skill B
 
 | User Intent | Skill to Invoke | Trigger Words |
 |------------|----------------|---------------|
-| Research a topic (ultra-comprehensive by default) | last30days | "research", "what are people saying", "last 30 days", "trending", "deep research", "comprehensive search" |
+| Research a topic (ultra-comprehensive by default) | last60days | "research", "what are people saying", "last 60 days", "trending", "deep research", "comprehensive search" |
 | Creating features, adding functionality | superpowers:brainstorming | "add", "create", "build", "implement" (new things) |
 | Bug, test failure, unexpected behavior | superpowers:systematic-debugging | "bug", "failing", "broken", "error", "doesn't work" |
 | Writing implementation plans | superpowers:writing-plans | "plan", "design", "architect" (before coding) |
@@ -53,7 +53,7 @@ When the user's intent matches a pattern below, invoke the corresponding skill B
 
 | Skill | Success Criteria (binary-testable) |
 |-------|-----------------------------------|
-| last30days | Research output contains three or more sources |
+| last60days | Research output contains three or more sources |
 | superpowers:brainstorming | Brainstorm produced three or more distinct approaches |
 | fix-pr-feedback | All Copilot review comments addressed with changes |
 | /commit | Commit message follows conventional commit format |
