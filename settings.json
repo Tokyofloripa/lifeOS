@@ -38,11 +38,19 @@
     ],
     "SessionStart": [
       {
-        "matcher": "startup",
+        "matcher": "startup|resume|clear",
         "hooks": [
           {
             "type": "command",
-            "command": "[ -n \"$CI\" ] && exit 0; if git rev-parse --git-dir > /dev/null 2>&1; then BRANCH=$(git branch --show-current 2>/dev/null); REPO=$(basename $(git rev-parse --show-toplevel 2>/dev/null)); STATUS=$(git status --short 2>/dev/null | wc -l | tr -d ' '); LAST=$(git log --oneline -3 2>/dev/null); echo \"Git context: repo=$REPO branch=$BRANCH uncommitted_files=$STATUS\"; echo \"Recent commits:\"; echo \"$LAST\"; fi"
+            "command": "[ -n \"$CI\" ] && exit 0; if git rev-parse --git-dir > /dev/null 2>&1; then BRANCH=$(git branch --show-current 2>/dev/null); REPO=$(basename $(git rev-parse --show-toplevel 2>/dev/null)); STATUS=$(git status --short 2>/dev/null | wc -l | tr -d ' '); LAST=$(git log --oneline -3 2>/dev/null); echo \"Git context: repo=$REPO branch=$BRANCH uncommitted_files=$STATUS\"; echo \"Recent commits:\"; echo \"$LAST\"; if [ \"$BRANCH\" != \"main\" ] && [ \"$BRANCH\" != \"master\" ] && command -v gh > /dev/null 2>&1; then PR_JSON=$(gh pr list --head \"$BRANCH\" --json number,title,reviewRequests --jq '.[0]' 2>/dev/null); if [ -n \"$PR_JSON\" ] && [ \"$PR_JSON\" != \"null\" ]; then PR_NUM=$(echo \"$PR_JSON\" | jq -r '.number'); COMMENTS=$(gh api \"repos/{owner}/{repo}/pulls/$PR_NUM/comments\" --jq 'length' 2>/dev/null); REVIEWS=$(gh api \"repos/{owner}/{repo}/pulls/$PR_NUM/reviews\" --jq '[.[] | select(.user.login | test(\"copilot|bot\"))] | length' 2>/dev/null); if [ \"${COMMENTS:-0}\" -gt 0 ] || [ \"${REVIEWS:-0}\" -gt 0 ]; then echo \"\"; echo \"⚠ OPEN PR #$PR_NUM has Copilot review feedback ($COMMENTS inline comments, $REVIEWS bot reviews).\"; echo \"ACTION REQUIRED: Run /fix-pr-feedback $PR_NUM to read and address Copilot's comments before continuing work.\"; echo \"The adversarial loop is incomplete until feedback is addressed.\"; fi; fi; fi; fi"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/Users/rafaelfigueroa/.claude/hooks/gsd-check-update.js\""
           }
         ]
       }
@@ -93,6 +101,5 @@
     "command": "npx -y ccstatusline@latest",
     "padding": 0
   },
-  "skipDangerousModePermissionPrompt": true,
-  "model": "opus[1m]"
+  "skipDangerousModePermissionPrompt": true
 }
