@@ -6,24 +6,26 @@ Classifies every file as USER (our customizations, never overwritten), SYSTEM (f
 
 These files represent our personal infrastructure. Upgrades never touch them.
 
-| File | Purpose |
-|------|---------|
-| `CLAUDE.md` | Global conventions (37 lines, 7 sections) |
-| `settings.json` | 8 hooks across 7 events + model + status line |
-| `commands/commit.md` | /commit — conventional commit, no push |
-| `commands/pr.md` | /pr — create PR, Copilot reminder |
-| `commands/branch.md` | /branch — feature branch from main |
-| `commands/push.md` | /push — push, never force |
-| `commands/fix-pr-feedback.md` | /fix-pr-feedback — adversarial bridge |
-| `commands/README.md` | Command index with versions and dependencies |
-| `rules/skill-routing.md` | Intent → skill routing table |
-| `protected-patterns.json` | Declarative security patterns (secrets, paths, commands) |
-| `.env.template` | Required environment variables template |
-| `MANIFEST.md` | This file |
-| `CHANGELOG.md` | Change history with dates and reasons |
-| `verify.sh` | Configuration integrity verification |
-| `upgrade.sh` | Check SYSTEM components for updates |
-| `pre-commit-hook.sh` | Git pre-commit secret scanner |
+| File | Purpose | Version |
+|------|---------|---------|
+| `CLAUDE.md` | Global conventions (45 lines, 8 sections) | 1.3 |
+| `settings.json` | 8 hooks across 7 events + model + status line | 1.5 |
+| `commands/commit.md` | /commit — conventional commit, no push | 1.0 |
+| `commands/pr.md` | /pr — create PR, Copilot reminder | 1.0 |
+| `commands/branch.md` | /branch — feature branch from main | 1.0 |
+| `commands/push.md` | /push — push, never force | 1.0 |
+| `commands/fix-pr-feedback.md` | /fix-pr-feedback — adversarial bridge | 1.0 |
+| `commands/README.md` | Command index with versions and dependencies | 1.1 |
+| `rules/skill-routing.md` | Intent → skill routing table | 1.1 |
+| `rules/ci-environment.md` | CI behavior adjustments | 1.0 |
+| `protected-patterns.json` | Security patterns (v2: named, severity, PII) | 2.0 |
+| `.env.template` | Required environment variables template | 1.0 |
+| `MANIFEST.md` | This file | 2.0 |
+| `CHANGELOG.md` | Change history with dates and reasons | 1.1 |
+| `verify.sh` | Configuration integrity verification (40+ checks) | 2.0 |
+| `upgrade.sh` | Check SYSTEM components for updates | 1.1 |
+| `pre-commit-hook.sh` | Git pre-commit secret + PII scanner | 2.0 |
+| `install.sh` | Bootstrap and verify setup | 1.0 |
 
 ## SYSTEM — From Plugins/Upstream (safe to update)
 

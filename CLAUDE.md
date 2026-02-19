@@ -40,4 +40,5 @@
 - **CODE** (hooks in settings.json): deterministic, always fires, can block. Use for: safety, secrets, destructive ops.
 - **CLI** (slash commands in commands/): structured workflows, consistent behavior. Use for: git operations, PR workflow, sync.
 - **PROMPT** (CLAUDE.md + rules/): probabilistic guidance, degrades at scale. Use for: conventions, preferences, style.
-- When in doubt: if it MUST happen → hook. If it SHOULD happen → command. If it's preferred → CLAUDE.md.
+- **SKILL** (skills/*/SKILL.md): AI reasoning with structured workflow. Use for: research, complex multi-step tasks.
+- When in doubt: if it MUST happen → hook. If it SHOULD happen → command. If it's preferred → CLAUDE.md. If it needs AI judgment → skill.

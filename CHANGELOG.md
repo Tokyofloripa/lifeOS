@@ -2,6 +2,20 @@
 
 All notable changes to the Claude Code global configuration.
 
+## 2026-02-19 — PAI v2 Completion
+
+- Upgraded: protected-patterns.json to v2 schema (named patterns, severity levels, PII detection)
+- Upgraded: pre-commit-hook.sh to read v2 schema (secrets + PII + blocked paths)
+- Upgraded: verify.sh to v2 (40+ checks, regex validation, env vars, file health)
+- Added: install.sh (bootstrap and verify setup)
+- Added: rules/ci-environment.md (CI behavior adjustments)
+- Added: SKILL level to enforcement hierarchy in CLAUDE.md
+- Added: Routing Rules + ISC Templates to skill-routing.md
+- Added: Command Design Rules + Determinism column to commands/README.md
+- Added: Version column to MANIFEST.md
+- Added: Unclassified file detection in upgrade.sh
+- Fixed: pre-commit-hook.sh grep -- for dash-leading patterns
+
 ## 2026-02-19 — PAI-Inspired Improvements
 
 - Added: MANIFEST.md (USER/SYSTEM file separation)

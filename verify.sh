@@ -1,5 +1,5 @@
 #!/bin/bash
-# verify.sh — Validate entire Claude Code configuration integrity
+# verify.sh — Validate entire Claude Code configuration integrity (v2)
 # Run after installation, after upgrades, or when something seems wrong
 
 PASS=0
@@ -18,7 +18,15 @@ check() {
     fi
 }
 
-echo "=== Claude Code Configuration Verification ==="
+check_warn() {
+    if eval "$2" > /dev/null 2>&1; then
+        pass "$1"
+    else
+        warn "$1"
+    fi
+}
+
+echo "=== Claude Code Configuration Verification (v2) ==="
 echo "Date: $(date)"
 echo ""
 
@@ -27,6 +35,7 @@ check "CLAUDE.md exists" "test -f $HOME/.claude/CLAUDE.md"
 check "CLAUDE.md under 50 lines" "[ \$(wc -l < $HOME/.claude/CLAUDE.md) -lt 50 ]"
 check "CLAUDE.md has Dual-Model section" "grep -q 'Dual-Model' $HOME/.claude/CLAUDE.md"
 check "CLAUDE.md has Enforcement Hierarchy" "grep -q 'Enforcement Hierarchy' $HOME/.claude/CLAUDE.md"
+check "CLAUDE.md has SKILL level" "grep -q 'SKILL.*skills/' $HOME/.claude/CLAUDE.md"
 check "settings.json valid JSON" "python3 -c \"import json; json.load(open('$HOME/.claude/settings.json'))\""
 
 echo ""
@@ -48,10 +57,25 @@ done
 check "Commands README exists" "test -f $HOME/.claude/commands/README.md"
 
 echo ""
-echo "--- Security ---"
+echo "--- Rules ---"
+check "Skill routing table exists" "test -f $HOME/.claude/rules/skill-routing.md"
+check "CI environment rules exist" "test -f $HOME/.claude/rules/ci-environment.md"
+check_warn "Identity rules exist" "test -f $HOME/.claude/rules/identity.md"
+
+echo ""
+echo "--- Security (v2 schema) ---"
 check "protected-patterns.json exists" "test -f $HOME/.claude/protected-patterns.json"
 check "protected-patterns.json valid JSON" "python3 -c \"import json; json.load(open('$HOME/.claude/protected-patterns.json'))\""
-check "12+ secret patterns defined" "python3 -c \"import json; assert len(json.load(open('$HOME/.claude/protected-patterns.json'))['secret_patterns']) >= 12\""
+check "Schema version is 2.0.0" "python3 -c \"import json; assert json.load(open('$HOME/.claude/protected-patterns.json'))['_schema_version'] == '2.0.0'\""
+check "All regex patterns compile" "python3 -c \"
+import json, re
+d = json.load(open('$HOME/.claude/protected-patterns.json'))
+for section in ['secrets', 'pii', 'blocked_paths', 'blocked_commands']:
+    for p in d.get(section, {}).get('patterns', []):
+        re.compile(p['regex'])
+\""
+check "15+ secret patterns" "python3 -c \"import json; assert len(json.load(open('$HOME/.claude/protected-patterns.json'))['secrets']['patterns']) >= 15\""
+check "PII patterns present" "python3 -c \"import json; assert len(json.load(open('$HOME/.claude/protected-patterns.json'))['pii']['patterns']) >= 3\""
 check "pre-commit-hook.sh exists" "test -f $HOME/.claude/pre-commit-hook.sh"
 check "pre-commit-hook.sh executable" "test -x $HOME/.claude/pre-commit-hook.sh"
 
@@ -62,7 +86,8 @@ check "gh CLI authenticated" "gh auth status"
 check ".env.template exists" "test -f $HOME/.claude/.env.template"
 check "MANIFEST.md exists" "test -f $HOME/.claude/MANIFEST.md"
 check "CHANGELOG.md exists" "test -f $HOME/.claude/CHANGELOG.md"
-check "Skill routing table exists" "test -f $HOME/.claude/rules/skill-routing.md"
+check "install.sh exists" "test -f $HOME/.claude/install.sh"
+check "install.sh executable" "test -x $HOME/.claude/install.sh"
 
 echo ""
 echo "--- Environment ---"
@@ -71,6 +96,33 @@ check "gh available" "which gh"
 check "python3 available" "which python3"
 check "jq available" "which jq"
 check "claude available" "which claude"
+
+echo ""
+echo "--- Environment Variables ---"
+ENV_FILE="$HOME/.config/last30days/.env"
+if [ -f "$ENV_FILE" ]; then
+    check_warn "OPENAI_API_KEY set" "grep -q '^OPENAI_API_KEY=.' '$ENV_FILE'"
+    check_warn "XAI_API_KEY set" "grep -q '^XAI_API_KEY=.' '$ENV_FILE'"
+else
+    warn "~/.config/last30days/.env not found"
+fi
+
+echo ""
+echo "--- File Health ---"
+for f in CLAUDE.md settings.json MANIFEST.md protected-patterns.json .env.template CHANGELOG.md; do
+    target="$HOME/.claude/$f"
+    if [ -L "$target" ]; then
+        if [ -e "$target" ]; then
+            pass "$f symlink valid"
+        else
+            fail "$f is a dangling symlink"
+        fi
+    elif [ -f "$target" ]; then
+        pass "$f exists (regular file)"
+    else
+        fail "$f missing"
+    fi
+done
 
 echo ""
 echo "=== Results ==="

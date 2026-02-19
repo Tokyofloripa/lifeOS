@@ -41,3 +41,21 @@ When the user's intent matches a pattern below, invoke the corresponding skill B
 | Work is done, verify before claiming complete | superpowers:verification-before-completion | "done", "finished", "complete" (before committing) |
 | Request code review | superpowers:requesting-code-review | "review my code", "check my work" |
 | Branch ready to merge | superpowers:finishing-a-development-branch | "ready to merge", "finish this branch" |
+
+## Routing Rules
+
+1. If the user explicitly names a skill or command, use that — don't second-guess.
+2. If the intent is ambiguous, ask for clarification rather than guessing wrong.
+3. Skills can chain: a "fix PR feedback" session may end with /commit and /push.
+4. When no skill matches, proceed normally — not every task needs routing.
+5. This table is PROMPT-level guidance. The PreToolUse hook (CODE-level) overrides if there's a conflict.
+
+## ISC Templates (verification criteria)
+
+| Skill | Success Criteria (binary-testable) |
+|-------|-----------------------------------|
+| last30days | Research output contains three or more sources |
+| superpowers:brainstorming | Brainstorm produced three or more distinct approaches |
+| fix-pr-feedback | All Copilot review comments addressed with changes |
+| /commit | Commit message follows conventional commit format |
+| /pr | PR created with description and Copilot review requested |

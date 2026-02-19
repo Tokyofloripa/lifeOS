@@ -1,38 +1,70 @@
 {
-  "_comment": "Declarative security patterns. Referenced by PreToolUse hooks and pre-commit-hook.sh.",
-  "secret_patterns": [
-    "ANTHROPIC_API_KEY=[A-Za-z0-9_-]{20,}",
-    "OPENAI_API_KEY=sk-[A-Za-z0-9]{20,}",
-    "XAI_API_KEY=xai-[A-Za-z0-9]{20,}",
-    "ghp_[A-Za-z0-9]{36}",
-    "gho_[A-Za-z0-9]{36}",
-    "github_pat_[A-Za-z0-9_]{82}",
-    "sk-ant-[A-Za-z0-9_-]{80,}",
-    "Bearer [A-Za-z0-9_-]{20,}",
-    "-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----",
-    "BLUESKY_APP_PASSWORD=[A-Za-z0-9_-]{10,}",
-    "YOUTUBE_API_KEY=AIza[A-Za-z0-9_-]{30,}",
-    "SO_API_KEY=[A-Za-z0-9()]{10,}"
-  ],
-  "blocked_paths": [
-    "\\.env$",
-    "\\.env\\.",
-    "credentials",
-    "\\.key$",
-    "\\.pem$",
-    "\\.secret$",
-    "secret.*\\.json"
-  ],
-  "blocked_commands": [
-    "git push.*(--force|-f).*(main|master)",
-    "rm -rf (/|~|\\$HOME)",
-    "DROP (TABLE|DATABASE)",
-    "git reset --hard",
-    "git checkout \\.",
-    "git restore \\.",
-    "git clean.+-f",
-    "git add.*(\\.(env|key|pem|secret)|credentials|\\*\\.key|\\*\\.pem)",
-    "curl.*\\|.*(ba)?sh",
-    "wget.*\\|.*(ba)?sh"
-  ]
+  "_schema_version": "2.0.0",
+  "_last_updated": "2026-02-19",
+  "_comment": "Declarative security patterns. Read by pre-commit-hook.sh, referenced by PreToolUse hooks.",
+
+  "secrets": {
+    "description": "Patterns that match API keys, tokens, and credentials",
+    "patterns": [
+      { "name": "Anthropic API Key", "regex": "sk-ant-[A-Za-z0-9_-]{20,}", "severity": "critical" },
+      { "name": "OpenAI API Key", "regex": "OPENAI_API_KEY=sk-[A-Za-z0-9]{20,}", "severity": "critical" },
+      { "name": "OpenAI Bare Key", "regex": "sk-[A-Za-z0-9]{20,}", "severity": "critical" },
+      { "name": "xAI API Key", "regex": "XAI_API_KEY=xai-[A-Za-z0-9]{20,}", "severity": "critical" },
+      { "name": "GitHub PAT (classic)", "regex": "ghp_[A-Za-z0-9]{36}", "severity": "critical" },
+      { "name": "GitHub OAuth Token", "regex": "gho_[A-Za-z0-9]{36}", "severity": "critical" },
+      { "name": "GitHub Fine-grained PAT", "regex": "github_pat_[A-Za-z0-9_]{50,}", "severity": "critical" },
+      { "name": "AWS Access Key", "regex": "AKIA[A-Z0-9]{16}", "severity": "critical" },
+      { "name": "Slack Token", "regex": "xox[bpras]-[A-Za-z0-9-]{10,}", "severity": "high" },
+      { "name": "Private Key Header", "regex": "-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----", "severity": "critical" },
+      { "name": "Bearer Token", "regex": "Bearer [A-Za-z0-9_-]{20,}", "severity": "high" },
+      { "name": "Bluesky App Password", "regex": "BLUESKY_APP_PASSWORD=[A-Za-z0-9_-]{10,}", "severity": "high" },
+      { "name": "YouTube API Key", "regex": "YOUTUBE_API_KEY=AIza[A-Za-z0-9_-]{30,}", "severity": "high" },
+      { "name": "SO API Key", "regex": "SO_API_KEY=[A-Za-z0-9()]{10,}", "severity": "medium" },
+      { "name": "Generic High Entropy", "regex": "(api[_-]?key|secret|token|password)\\s*[:=]\\s*['\"][A-Za-z0-9+/=]{20,}", "severity": "medium" }
+    ]
+  },
+
+  "pii": {
+    "description": "Personally identifiable information patterns",
+    "patterns": [
+      { "name": "SSN (US)", "regex": "\\b\\d{3}-\\d{2}-\\d{4}\\b", "severity": "critical" },
+      { "name": "Brazilian CPF", "regex": "\\b\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}\\b", "severity": "critical" },
+      { "name": "Credit Card (Visa/MC/Amex)", "regex": "\\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13})\\b", "severity": "critical" }
+    ]
+  },
+
+  "blocked_paths": {
+    "description": "File patterns that should never be committed",
+    "patterns": [
+      { "name": "Dotenv files", "regex": "\\.env$", "action": "block" },
+      { "name": "Dotenv variants", "regex": "\\.env\\.", "action": "block" },
+      { "name": "Credential files", "regex": "credentials", "action": "block" },
+      { "name": "Key files", "regex": "\\.key$", "action": "block" },
+      { "name": "PEM files", "regex": "\\.pem$", "action": "block" },
+      { "name": "Secret files", "regex": "\\.secret$", "action": "block" },
+      { "name": "Secret JSON", "regex": "secret.*\\.json", "action": "block" },
+      { "name": "SSH directory", "regex": "\\.ssh/", "action": "block" },
+      { "name": "AWS config", "regex": "\\.aws/", "action": "block" },
+      { "name": "Claude tokens", "regex": "\\.claude\\.json$", "action": "block" }
+    ]
+  },
+
+  "blocked_commands": {
+    "description": "Shell commands that should be blocked or require confirmation",
+    "patterns": [
+      { "name": "Force push to main", "regex": "git push.*(--force|-f).*(main|master)", "action": "block" },
+      { "name": "Destructive rm", "regex": "rm -rf (/|~|\\$HOME)", "action": "block" },
+      { "name": "SQL drop", "regex": "DROP (TABLE|DATABASE)", "action": "block" },
+      { "name": "Hard reset", "regex": "git reset --hard", "action": "block" },
+      { "name": "Checkout discard", "regex": "git checkout \\.", "action": "block" },
+      { "name": "Restore discard", "regex": "git restore \\.", "action": "block" },
+      { "name": "Clean force", "regex": "git clean.+-f", "action": "block" },
+      { "name": "Stage secrets", "regex": "git add.*(\\.(env|key|pem|secret)|credentials|\\*\\.key|\\*\\.pem)", "action": "block" },
+      { "name": "Pipe curl to shell", "regex": "curl.*\\|.*(ba)?sh", "action": "block" },
+      { "name": "Pipe wget to shell", "regex": "wget.*\\|.*(ba)?sh", "action": "block" },
+      { "name": "World writable chmod", "regex": "chmod (777|a\\+w)", "action": "block" },
+      { "name": "npm publish", "regex": "npm publish", "action": "confirm" },
+      { "name": "Docker rm force", "regex": "docker rm.*(-f|--force)", "action": "confirm" }
+    ]
+  }
 }

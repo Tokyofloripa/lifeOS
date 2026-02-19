@@ -53,5 +53,22 @@ if [ ! -f ~/.claude/.env.template ]; then
     echo "  ⚠ .env.template missing. Environment variables not documented."
 fi
 
+# Check for unclassified files
+MANIFEST="$HOME/.claude/MANIFEST.md"
+if [ -f "$MANIFEST" ]; then
+    UNCLASSIFIED=0
+    for f in "$HOME"/.claude/*; do
+        bname=$(basename "$f")
+        case "$bname" in
+            projects|backups|statsig|*.log|cache|debug|file-history|history.jsonl|ide|paste-cache|plans|shell-snapshots|skills|stats-cache.json|statusline-command.sh|tasks|todos|usage-data|.git|.gitignore|.DS_Store) continue ;;
+        esac
+        if ! grep -q "$bname" "$MANIFEST" 2>/dev/null; then
+            echo "  ⚠ Unclassified file: $bname"
+            UNCLASSIFIED=$((UNCLASSIFIED + 1))
+        fi
+    done
+    [ $UNCLASSIFIED -eq 0 ] && echo "  All files classified in MANIFEST.md"
+fi
+
 echo ""
 echo "Run ~/.claude/verify.sh for full integrity check."

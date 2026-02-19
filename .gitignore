@@ -28,6 +28,9 @@ statusline-command.sh
 tasks/
 todos/
 usage-data/
+downloads/
+session-env/
+telemetry/
 
 # Plugins (reinstallable via marketplace)
 plugins/
