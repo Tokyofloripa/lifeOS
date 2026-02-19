@@ -42,7 +42,7 @@ for file in $STAGED; do
     fi
 
     while IFS= read -r pattern; do
-        if git show ":$file" 2>/dev/null | grep -qE "$pattern"; then
+        if git show ":$file" 2>/dev/null | grep -qE -- "$pattern"; then
             echo "SECRET DETECTED in $file: matches pattern '$pattern'" >&2
             FOUND=$((FOUND + 1))
         fi
