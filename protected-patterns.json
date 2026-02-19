@@ -1,0 +1,38 @@
+{
+  "_comment": "Declarative security patterns. Referenced by PreToolUse hooks and pre-commit-hook.sh.",
+  "secret_patterns": [
+    "ANTHROPIC_API_KEY=[A-Za-z0-9_-]{20,}",
+    "OPENAI_API_KEY=sk-[A-Za-z0-9]{20,}",
+    "XAI_API_KEY=xai-[A-Za-z0-9]{20,}",
+    "ghp_[A-Za-z0-9]{36}",
+    "gho_[A-Za-z0-9]{36}",
+    "github_pat_[A-Za-z0-9_]{82}",
+    "sk-ant-[A-Za-z0-9_-]{80,}",
+    "Bearer [A-Za-z0-9_-]{20,}",
+    "-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----",
+    "BLUESKY_APP_PASSWORD=[A-Za-z0-9_-]{10,}",
+    "YOUTUBE_API_KEY=AIza[A-Za-z0-9_-]{30,}",
+    "SO_API_KEY=[A-Za-z0-9()]{10,}"
+  ],
+  "blocked_paths": [
+    "\\.env$",
+    "\\.env\\.",
+    "credentials",
+    "\\.key$",
+    "\\.pem$",
+    "\\.secret$",
+    "secret.*\\.json"
+  ],
+  "blocked_commands": [
+    "git push.*(--force|-f).*(main|master)",
+    "rm -rf (/|~|\\$HOME)",
+    "DROP (TABLE|DATABASE)",
+    "git reset --hard",
+    "git checkout \\.",
+    "git restore \\.",
+    "git clean.+-f",
+    "git add.*(\\.(env|key|pem|secret)|credentials|\\*\\.key|\\*\\.pem)",
+    "curl.*\\|.*(ba)?sh",
+    "wget.*\\|.*(ba)?sh"
+  ]
+}

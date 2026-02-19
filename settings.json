@@ -1,0 +1,98 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/tmp/test_new_xai.py:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "TOOL_CMD=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.command // empty' 2>/dev/null); if echo \"$TOOL_CMD\" | grep -qE 'git push.*(--force|-f).*(main|master)|rm -rf (/|~|\\$HOME)|DROP (TABLE|DATABASE)|git reset --hard|git checkout \\.|git restore \\.|git clean.+-f|git add.*(\\.(env|key|pem|secret)|credentials|\\*\\.key|\\*\\.pem)|curl.*\\|.*(ba)?sh|wget.*\\|.*(ba)?sh'; then echo 'BLOCKED: Dangerous command detected (destructive operation, secret staging, or remote code execution). Review and run manually if intended.' >&2; exit 2; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE_PATH=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.file_path // empty' 2>/dev/null); if echo \"$FILE_PATH\" | grep -qE '\\.(env|key|pem|secret)$|credentials|\\.env\\.|secret.*\\.json'; then echo \"BLOCKED: Cannot write to secret file: $FILE_PATH. Store secrets in ~/.config/ or environment variables, never in tracked files.\" >&2; exit 2; fi"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "TOOL_CMD=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.command // empty' 2>/dev/null); if echo \"$TOOL_CMD\" | grep -qE '^git push'; then echo '{\"hookSpecificOutput\":{\"additionalContext\":\"Push complete. Copilot will auto-review this PR within minutes. Use /fix-pr-feedback to read and address Copilot review comments after they arrive.\"}}'; elif echo \"$TOOL_CMD\" | grep -qE '^git commit'; then SUMMARY=$(git log -1 --stat --format='%h %s' 2>/dev/null | head -10); echo \"{\\\"hookSpecificOutput\\\":{\\\"additionalContext\\\":\\\"Committed: $SUMMARY\\\"}}\"; fi"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$CI\" ] && exit 0; if git rev-parse --git-dir > /dev/null 2>&1; then BRANCH=$(git branch --show-current 2>/dev/null); REPO=$(basename $(git rev-parse --show-toplevel 2>/dev/null)); STATUS=$(git status --short 2>/dev/null | wc -l | tr -d ' '); LAST=$(git log --oneline -3 2>/dev/null); echo \"Git context: repo=$REPO branch=$BRANCH uncommitted_files=$STATUS\"; echo \"Recent commits:\"; echo \"$LAST\"; fi"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "rm -f /tmp/claude-precompact-*.md 2>/dev/null; if git rev-parse --git-dir > /dev/null 2>&1; then git worktree prune 2>/dev/null; fi; exit 0"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$CI\" ] && exit 0; if git rev-parse --git-dir > /dev/null 2>&1; then if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then git add -u && git commit -m \"wip: auto-checkpoint $(date +%H:%M:%S)\" --no-verify 2>/dev/null; fi; fi; exit 0"
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "TASK=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.task_subject // empty' 2>/dev/null); echo \"Before marking task complete, verify: tests pass, changes work as intended, no regressions introduced. Task: $TASK\""
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "SAVE=/tmp/claude-precompact-$(date +%s).md; echo '# Pre-Compaction Context Save' > $SAVE; echo \"Date: $(date)\" >> $SAVE; if git rev-parse --git-dir > /dev/null 2>&1; then echo \"Branch: $(git branch --show-current 2>/dev/null)\" >> $SAVE; echo '## Modified files' >> $SAVE; git diff --name-only 2>/dev/null >> $SAVE; echo '## Recent commits' >> $SAVE; git log --oneline -5 2>/dev/null >> $SAVE; fi; echo \"Context saved to $SAVE before compaction.\""
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "npx -y ccstatusline@latest",
+    "padding": 0
+  },
+  "skipDangerousModePermissionPrompt": true,
+  "model": "opus[1m]"
+}

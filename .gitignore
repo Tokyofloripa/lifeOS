@@ -1,0 +1,42 @@
+# Secrets — NEVER commit
+../.claude.json
+*.credentials*
+.env
+.env.*
+!.env.template
+*.secret
+*.key
+*.pem
+
+# Ephemeral data (Claude Code internal)
+projects/
+backups/
+statsig/
+logs/
+*.log
+cache/
+debug/
+file-history/
+history.jsonl
+ide/
+paste-cache/
+plans/
+shell-snapshots/
+skills/
+stats-cache.json
+statusline-command.sh
+tasks/
+todos/
+usage-data/
+
+# Plugins (reinstallable via marketplace)
+plugins/
+
+# Auto-gitignored by Claude Code
+settings.local.json
+CLAUDE.local.md
+
+# Editor artifacts
+*.swp
+*~
+.DS_Store
