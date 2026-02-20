@@ -242,22 +242,38 @@ def run_sources(
             for name, module in selected.items()
         }
 
+        def _store_result(result: SourceResult):
+            """Store a result, handling list-return (multi-signal) sources."""
+            if result.signal is not None and isinstance(result.signal, list):
+                # Multi-signal source (e.g. GDELT returns [volume, sentiment])
+                for s in result.signal:
+                    composite_key = f"{result.name}_{s.metric_name}"
+                    results[composite_key] = s
+                    all_results[composite_key] = SourceResult(
+                        name=composite_key,
+                        signal=s,
+                        elapsed_ms=result.elapsed_ms,
+                    )
+            elif result.signal is not None:
+                all_results[result.name] = result
+                results[result.name] = result.signal
+            else:
+                all_results[result.name] = result
+
         try:
             for future in as_completed(futures, timeout=global_budget):
                 result = future.result()
-                all_results[result.name] = result
-                if result.signal is not None:
-                    results[result.name] = result.signal
+                _store_result(result)
         except TimeoutError:
             # Global budget exceeded — collect completed, mark remaining as timed out
             for future, name in futures.items():
-                if name in all_results:
-                    continue  # Already collected
+                if name in all_results or any(
+                    k.startswith(name + "_") for k in all_results
+                ):
+                    continue  # Already collected (single or multi-signal)
                 if future.done():
                     result = future.result()
-                    all_results[result.name] = result
-                    if result.signal is not None:
-                        results[result.name] = result.signal
+                    _store_result(result)
                 else:
                     all_results[name] = SourceResult(
                         name=name,
