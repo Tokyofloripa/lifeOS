@@ -1,3 +1,6 @@
 [submodule "skills/last60days"]
 	path = skills/last60days
 	url = https://github.com/Tokyofloripa/last60days.git
+[submodule "skills/ai-image"]
+	path = skills/ai-image
+	url = https://github.com/Tokyofloripa/ai-image-skill.git
