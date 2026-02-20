@@ -1,15 +1,24 @@
-"""Scoring engine primitives for the temperature skill.
+"""Scoring engine for the temperature skill.
 
 Provides per-signal normalization, week-over-week velocity, direction
-classification, sentiment normalization, and breakout detection.
+classification, sentiment normalization, breakout detection, dimension
+aggregation, overall temperature computation, convergence detection,
+and the top-level score_signals() pipeline function.
 
 All functions are pure: data in, data out. No mutation of input TrendSignals
 except where explicitly documented (velocity/direction fields).
 """
 
+from collections import defaultdict
 from typing import Dict, List, Optional, Tuple
 
-from .schema import TrendDataPoint, TrendSignal
+from .schema import (
+    DimensionScore,
+    TemperatureReport,
+    TrendDataPoint,
+    TrendSignal,
+    get_temperature_label,
+)
 
 
 # --- Constants ---
@@ -161,3 +170,288 @@ def detect_breakout(signals: Dict[str, TrendSignal]) -> bool:
         len(s.datapoints) for s in signals.values()
     )
     return max_datapoints < 7
+
+
+# --- Dimension Aggregation ---
+
+
+def group_by_dimension(
+    signals: Dict[str, TrendSignal],
+) -> Dict[str, List[TrendSignal]]:
+    """Group signals by dimension name, applying DIMENSION_MAP remapping.
+
+    Sentiment signals get remapped to media dimension via DIMENSION_MAP.
+    """
+    groups: Dict[str, List[TrendSignal]] = defaultdict(list)
+    for signal in signals.values():
+        dim = DIMENSION_MAP.get(signal.dimension, signal.dimension)
+        groups[dim].append(signal)
+    return dict(groups)
+
+
+def _renormalize_weights(available: Dict[str, float]) -> Dict[str, float]:
+    """Re-normalize source weights to sum to 1.0 for available sources only.
+
+    When some sources in a dimension are missing, redistribute weight
+    proportionally among present sources.
+    """
+    total = sum(available.values())
+    if total == 0:
+        n = len(available)
+        return {k: 1.0 / n for k in available} if n > 0 else {}
+    return {k: v / total for k, v in available.items()}
+
+
+def _source_key(signal: TrendSignal) -> str:
+    """Derive the weight-lookup key for a signal.
+
+    GDELT composite signals use 'source_metric_name' pattern (e.g.
+    'gdelt_news_volume'). Other sources use plain source name.
+    """
+    if signal.source == "gdelt":
+        return f"{signal.source}_{signal.metric_name}"
+    return signal.source
+
+
+def score_dimension(
+    signals: List[TrendSignal],
+    source_weights: Dict[str, float],
+) -> DimensionScore:
+    """Aggregate multiple signals into a single dimension score.
+
+    Re-normalizes source weights for available sources within the dimension.
+    Missing sources get their weight redistributed proportionally.
+
+    Args:
+        signals: List of TrendSignal objects within this dimension.
+        source_weights: Configured weights for sources in this dimension
+            (e.g. {"npm": 0.50, "pypi": 0.50}).
+
+    Returns:
+        DimensionScore with weighted composite score, direction, sparkline.
+    """
+    if not signals:
+        return DimensionScore(name="unknown", score=0)
+
+    dim_name = DIMENSION_MAP.get(signals[0].dimension, signals[0].dimension)
+
+    # Compute velocity/direction for each signal
+    for sig in signals:
+        sig.velocity = compute_velocity(sig.datapoints)
+        sig.direction = compute_direction(sig.velocity)
+
+    # Build available weights (only for sources we actually have)
+    available: Dict[str, float] = {}
+    for sig in signals:
+        key = _source_key(sig)
+        weight = source_weights.get(key, 1.0 / len(signals))
+        available[key] = weight
+
+    # Re-normalize to sum to 1.0
+    normalized = _renormalize_weights(available)
+
+    # Compute weighted score and velocity
+    weighted_score = 0.0
+    weighted_velocity = 0.0
+    for sig in signals:
+        key = _source_key(sig)
+        w = normalized.get(key, 0.0)
+        sig_score = normalize_signal(sig)
+        weighted_score += w * sig_score
+        weighted_velocity += w * sig.velocity
+
+    # Direction from weighted velocity
+    direction = compute_direction(weighted_velocity)
+
+    # Sparkline from signal with most datapoints
+    sparkline_values: List[float] = []
+    best_count = 0
+    for sig in signals:
+        if len(sig.datapoints) > best_count:
+            best_count = len(sig.datapoints)
+            sparkline_values = [dp.value for dp in sig.datapoints]
+
+    return DimensionScore(
+        name=dim_name,
+        score=int(clamp(weighted_score, 0.0, 100.0)),
+        direction=direction,
+        velocity=weighted_velocity,
+        signals=signals,
+        active_sources=len(signals),
+        max_sources=len(source_weights) if source_weights else len(signals),
+        sparkline=sparkline_values,
+    )
+
+
+# --- Temperature Computation ---
+
+
+def compute_temperature(
+    dimensions: Dict[str, DimensionScore],
+    weights: Dict[str, float] = None,
+) -> Tuple[int, str]:
+    """Combine dimension scores into overall 0-100 temperature.
+
+    Default weights: 20% each for 5 dimensions.
+    Missing dimensions contribute 0 (no re-normalization at overall level).
+
+    Args:
+        dimensions: name -> DimensionScore dict.
+        weights: Optional custom dimension weights. Defaults to equal 20%.
+
+    Returns:
+        (temperature, label) tuple.
+    """
+    w = weights or DEFAULT_DIMENSION_WEIGHTS
+
+    total = 0.0
+    for dim_name, dim_weight in w.items():
+        dim = dimensions.get(dim_name)
+        if dim is not None:
+            total += dim_weight * dim.score
+
+    temperature = int(clamp(total, 0.0, 100.0))
+    label = get_temperature_label(temperature)
+    return temperature, label
+
+
+# --- Convergence Detection ---
+
+
+def detect_convergence(dimensions: Dict[str, DimensionScore]) -> str:
+    """Classify cross-dimension directional agreement.
+
+    Returns one of:
+    - "strongly converging up" -- all active rising/surging, avg |velocity| > 30
+    - "converging up" -- all active rising/surging
+    - "strongly converging down" -- all active declining/crashing, avg |velocity| > 30
+    - "converging down" -- all active declining/crashing
+    - "diverging" -- some positive, some negative directions present
+    - "mixed" -- none of the above (e.g. all stable)
+    - "n/a" -- fewer than 2 active dimensions
+
+    Active dimensions have score > 0.
+    """
+    active = [d for d in dimensions.values() if d.score > 0]
+
+    if len(active) < 2:
+        return "n/a"
+
+    directions = [d.direction for d in active]
+    velocities = [d.velocity for d in active]
+
+    positive = {"surging", "rising"}
+    negative = {"declining", "crashing"}
+
+    pos_count = sum(1 for d in directions if d in positive)
+    neg_count = sum(1 for d in directions if d in negative)
+    total = len(directions)
+
+    if pos_count == total:
+        avg_vel = sum(abs(v) for v in velocities) / total
+        if avg_vel > 30:
+            return "strongly converging up"
+        return "converging up"
+    elif neg_count == total:
+        avg_vel = sum(abs(v) for v in velocities) / total
+        if avg_vel > 30:
+            return "strongly converging down"
+        return "converging down"
+    elif pos_count > 0 and neg_count > 0:
+        return "diverging"
+    else:
+        return "mixed"
+
+
+# --- Pipeline Helpers ---
+
+
+def _aggregate_direction(dimensions: Dict[str, DimensionScore]) -> str:
+    """Derive overall direction from dimension directions.
+
+    Weight-averaged velocity across active dimensions, then classify.
+    """
+    active = [d for d in dimensions.values() if d.score > 0]
+    if not active:
+        return "stable"
+
+    total_velocity = sum(d.velocity for d in active) / len(active)
+    return compute_direction(total_velocity)
+
+
+def _find_hottest(dimensions: Dict[str, DimensionScore]) -> str:
+    """Return the name of the dimension with the highest score."""
+    if not dimensions:
+        return ""
+    best = max(dimensions.values(), key=lambda d: d.score)
+    return best.name
+
+
+def _find_fastest(dimensions: Dict[str, DimensionScore]) -> str:
+    """Return the name of the dimension with the highest absolute velocity."""
+    if not dimensions:
+        return ""
+    best = max(dimensions.values(), key=lambda d: abs(d.velocity))
+    return best.name
+
+
+# --- Top-Level Pipeline ---
+
+
+def score_signals(
+    signals: Dict[str, TrendSignal],
+    dimension_weights: Dict[str, float] = None,
+) -> TemperatureReport:
+    """Score all signals into a TemperatureReport.
+
+    Full pipeline: compute velocity/direction per signal -> group by dimension
+    -> score dimensions -> compute temperature -> detect convergence ->
+    detect breakout -> build TemperatureReport.
+
+    Args:
+        signals: name -> TrendSignal dict from sources.run_sources().
+        dimension_weights: Override default equal weights.
+
+    Returns:
+        Populated TemperatureReport (topic/timestamp/window_days left empty
+        for the orchestrator to fill).
+    """
+    # Step 1: Compute velocity and direction for each signal
+    for signal in signals.values():
+        signal.velocity = compute_velocity(signal.datapoints)
+        signal.direction = compute_direction(signal.velocity)
+
+    # Step 2: Group signals by dimension (with sentiment -> media remapping)
+    by_dimension = group_by_dimension(signals)
+
+    # Step 3: Score each dimension
+    dimensions: Dict[str, DimensionScore] = {}
+    for dim_name, dim_signals in by_dimension.items():
+        source_wts = SOURCE_WEIGHTS.get(dim_name, {})
+        dimensions[dim_name] = score_dimension(dim_signals, source_wts)
+
+    # Step 4: Compute overall temperature
+    temperature, label = compute_temperature(dimensions, dimension_weights)
+
+    # Step 5: Detect convergence
+    convergence = detect_convergence(dimensions)
+
+    # Step 6: Check for breakout (new topic)
+    is_new = detect_breakout(signals)
+    overall_direction = _aggregate_direction(dimensions)
+    if is_new:
+        overall_direction = "new"
+
+    return TemperatureReport(
+        topic="",  # Filled by orchestrator
+        timestamp="",  # Filled by orchestrator
+        window_days=0,  # Filled by orchestrator
+        temperature=temperature,
+        label=label,
+        direction=overall_direction,
+        dimensions=dimensions,
+        convergence=convergence,
+        hottest_dimension=_find_hottest(dimensions),
+        fastest_mover=_find_fastest(dimensions),
+        all_signals=list(signals.values()),
+    )
