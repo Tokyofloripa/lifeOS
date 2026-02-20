@@ -5,3 +5,4 @@ from . import env
 from . import http
 from . import dates
 from . import sources
+from . import score
