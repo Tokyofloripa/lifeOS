@@ -27,6 +27,43 @@ Auto-select based on task signals (user can override):
 - Branch naming: `milestone/<slug>`, `feature/<slug>`, `fix/<slug>`
 - Base branch: `main` (or `master` if repo uses it)
 
+## Parallelism-First Execution
+
+**Default to parallel whenever 2+ tasks are independent. Don't ask — just dispatch.**
+
+### Auto-Parallel Decision Table
+
+| Situation | Action |
+|-----------|--------|
+| 2+ independent research queries | Parallel Task agents (no worktree) |
+| 2+ independent code tasks from a plan | Each gets own worktree + Task agent |
+| Implementation done, need spec + quality review | Parallel review agents per task |
+| Multiple test files failing independently | Parallel debug agents per failure domain |
+| Mixed research + implementation | All agents parallel (research doesn't need worktree) |
+
+### Worktree-Per-Agent for Code Tasks
+
+When dispatching parallel implementation agents that write code:
+1. Create one worktree per agent: `.worktrees/<task-slug>/`
+2. Each agent works on branch: `feat/<task-slug>`
+3. After all agents complete, merge branches sequentially into feature branch
+4. Merge conflict → stop and ask (never auto-resolve)
+
+### Throttling Limits
+
+| Agent type | Max concurrent | Why |
+|------------|---------------|-----|
+| Research (read-only) | No limit | No file conflicts, no git state |
+| Implementation (worktree) | 3 | Disk I/O, merge complexity |
+| Review (read-only) | No limit | No file conflicts |
+| Debug (investigation) | No limit | Read-only until fix phase |
+
+### When NOT to Parallelize
+- Tasks with data dependencies (B needs output of A)
+- Tasks editing the same files (merge pain even with worktrees)
+- Single-file fixes under 20 lines (overhead > benefit)
+- Tightly coupled logic where one change invalidates another
+
 ## Commit Messages
 - Use conventional commits: `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`, `perf:`
 - Subject line under 72 characters

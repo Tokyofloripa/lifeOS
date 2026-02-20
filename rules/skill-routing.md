@@ -5,6 +5,19 @@ globs: ["**/*"]
 
 When the user's intent matches a pattern below, invoke the corresponding skill BEFORE any other action. This is a PROMPT-level guide (see Enforcement Hierarchy in CLAUDE.md). The skill-forced-eval hook provides CODE-level enforcement in the cc/ project.
 
+## Priority 0 — Parallelism (evaluate BEFORE skill routing)
+
+Before routing to any skill, check: are there 2+ independent tasks visible? If yes, parallelize.
+
+| Situation | Action |
+|-----------|--------|
+| 2+ independent tasks of any type | Dispatch parallel Task agents immediately |
+| Independent code tasks in a plan | Create worktree per agent, then dispatch parallel |
+| Plan with mixed independent + dependent steps | Group into waves: parallelize within wave, sequence across waves |
+| Research + implementation needed | Research agents and implementation agents run simultaneously |
+
+**This overrides sequential defaults.** Existing skills (subagent-driven-dev, executing-plans, dispatching-parallel-agents) all defer to this: if tasks are independent and can be parallelized, they MUST be parallelized. The "no parallel implementation subagents" restriction is lifted when each agent has its own git worktree.
+
 ## Priority 1 — Process Skills (determine HOW to approach)
 
 | User Intent | Skill/Command | Trigger Words |

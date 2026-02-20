@@ -39,3 +39,20 @@ After pushing: wait for Copilot auto-review → `/fix-pr-feedback` → fix → p
 ## Subagent Discipline (Issue #237 mitigation)
 
 When spawning Task agents for implementation, include in the prompt: "Follow TDD discipline (red → green → refactor). Write failing test FIRST. Provide evidence (test output) before claiming completion. Do not skip tests."
+
+## Parallel Execution (Worktree Isolation)
+
+The subagent-driven-dev rule "don't dispatch multiple implementation subagents in parallel" is **LIFTED** when each agent gets its own git worktree. Worktree isolation eliminates file conflicts — the original reason for the restriction.
+
+**Parallel implementation is the DEFAULT** when:
+1. Tasks are independent (no data dependencies between them)
+2. Each agent has its own worktree + branch
+3. Implementation cap: 3 concurrent agents (throttling)
+
+**Merge protocol after parallel agents complete:**
+1. Merge each agent's branch into the feature branch sequentially
+2. Run full test suite after each merge
+3. If merge conflict: stop, report which branches conflict, ask human
+4. If tests fail after merge: stop, report which merge broke tests, ask human
+
+**Research, review, and debug agents** do not need worktrees (read-only). Dispatch these with no concurrency limit alongside implementation agents.

@@ -101,5 +101,6 @@
     "command": "npx -y ccstatusline@latest",
     "padding": 0
   },
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "model": "opus[1m]"
 }
