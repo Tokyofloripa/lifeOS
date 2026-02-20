@@ -1,0 +1,126 @@
+{
+  "total": 1234,
+  "offset": 0,
+  "data": [
+    {
+      "paperId": "abc0000def0000",
+      "title": "Paper 1: Advances in Large Language Models for Code Generation",
+      "year": 2026,
+      "citationCount": 42
+    },
+    {
+      "paperId": "abc0001def0007",
+      "title": "Paper 2: Advances in Large Language Models for Reasoning",
+      "year": 2026,
+      "citationCount": 18
+    },
+    {
+      "paperId": "abc0002def0014",
+      "title": "Paper 3: Advances in Large Language Models for Multimodal Understanding",
+      "year": 2026,
+      "citationCount": 156
+    },
+    {
+      "paperId": "abc0003def0021",
+      "title": "Paper 4: Advances in Large Language Models for Agent Systems",
+      "year": 2026,
+      "citationCount": 7
+    },
+    {
+      "paperId": "abc0004def0028",
+      "title": "Paper 5: Advances in Large Language Models for Safety",
+      "year": 2026,
+      "citationCount": 89
+    },
+    {
+      "paperId": "abc0005def0035",
+      "title": "Paper 6: Advances in Large Language Models for Efficiency",
+      "year": 2026,
+      "citationCount": 234
+    },
+    {
+      "paperId": "abc0006def0042",
+      "title": "Paper 7: Advances in Large Language Models for Fine-tuning",
+      "year": 2026,
+      "citationCount": 3
+    },
+    {
+      "paperId": "abc0007def0049",
+      "title": "Paper 8: Advances in Large Language Models for Evaluation",
+      "year": 2026,
+      "citationCount": 67
+    },
+    {
+      "paperId": "abc0008def0056",
+      "title": "Paper 9: Advances in Large Language Models for Alignment",
+      "year": 2026,
+      "citationCount": 112
+    },
+    {
+      "paperId": "abc0009def0063",
+      "title": "Paper 10: Advances in Large Language Models for Instruction Following",
+      "year": 2026,
+      "citationCount": 29
+    },
+    {
+      "paperId": "abc0010def0070",
+      "title": "Paper 11: Advances in Large Language Models for Knowledge Retrieval",
+      "year": 2026,
+      "citationCount": 5
+    },
+    {
+      "paperId": "abc0011def0077",
+      "title": "Paper 12: Advances in Large Language Models for Summarization",
+      "year": 2026,
+      "citationCount": 45
+    },
+    {
+      "paperId": "abc0012def0084",
+      "title": "Paper 13: Advances in Large Language Models for Translation",
+      "year": 2025,
+      "citationCount": 78
+    },
+    {
+      "paperId": "abc0013def0091",
+      "title": "Paper 14: Advances in Large Language Models for Question Answering",
+      "year": 2025,
+      "citationCount": 91
+    },
+    {
+      "paperId": "abc0014def0098",
+      "title": "Paper 15: Advances in Large Language Models for Dialogue",
+      "year": 2025,
+      "citationCount": 14
+    },
+    {
+      "paperId": "abc0015def0105",
+      "title": "Paper 16: Advances in Large Language Models for Sentiment Analysis",
+      "year": 2025,
+      "citationCount": 203
+    },
+    {
+      "paperId": "abc0016def0112",
+      "title": "Paper 17: Advances in Large Language Models for Information Extraction",
+      "year": 2025,
+      "citationCount": 56
+    },
+    {
+      "paperId": "abc0017def0119",
+      "title": "Paper 18: Advances in Large Language Models for Text Classification",
+      "year": 2025,
+      "citationCount": 38
+    },
+    {
+      "paperId": "abc0018def0126",
+      "title": "Paper 19: Advances in Large Language Models for Named Entity Recognition",
+      "year": 2025,
+      "citationCount": 127
+    },
+    {
+      "paperId": "abc0019def0133",
+      "title": "Paper 20: Advances in Large Language Models for Coreference Resolution",
+      "year": 2025,
+      "citationCount": 62
+    }
+  ]
+}
