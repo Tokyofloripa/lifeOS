@@ -81,9 +81,9 @@ class TestHTTPError:
 class TestModuleConstants:
     """Tests for module-level constants."""
 
-    def test_max_retries_is_1(self):
-        """Test that MAX_RETRIES is 1 (down from 3 in last60days)."""
-        assert MAX_RETRIES == 1
+    def test_max_retries_is_2(self):
+        """Test that MAX_RETRIES is 2 (1 retry after initial attempt; down from 3 in last60days)."""
+        assert MAX_RETRIES == 2
 
     def test_default_timeout_is_15(self):
         """Test that DEFAULT_TIMEOUT is 15 (down from 30 in last60days)."""

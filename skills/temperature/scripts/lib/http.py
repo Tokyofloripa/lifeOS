@@ -21,7 +21,7 @@ def log(msg: str):
         sys.stderr.flush()
 
 
-MAX_RETRIES = 1
+MAX_RETRIES = 2
 RETRY_DELAY = 1.0
 USER_AGENT = "temperature-skill/1.0 (Claude Code Skill)"
 
