@@ -9,7 +9,7 @@ except where explicitly documented (velocity/direction fields).
 
 from typing import Dict, List, Optional, Tuple
 
-from .schema import TrendDataPoint, TrendSignal, DimensionScore, get_temperature_label
+from .schema import TrendDataPoint, TrendSignal
 
 
 # --- Constants ---
