@@ -6,3 +6,4 @@ from . import http
 from . import dates
 from . import sources
 from . import score
+from . import render
