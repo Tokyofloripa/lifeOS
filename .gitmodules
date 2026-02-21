@@ -4,3 +4,6 @@
 [submodule "skills/ai-image"]
 	path = skills/ai-image
 	url = https://github.com/Tokyofloripa/ai-image-skill.git
+[submodule "skills/temperature"]
+	path = skills/temperature
+	url = https://github.com/Tokyofloripa/trends.git
