@@ -7,3 +7,6 @@
 [submodule "skills/temperature"]
 	path = skills/temperature
 	url = https://github.com/Tokyofloripa/trends.git
+[submodule "skills/gpt-researcher"]
+	path = skills/gpt-researcher
+	url = https://github.com/Tokyofloripa/gpt-researcher.git
