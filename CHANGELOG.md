@@ -2,6 +2,20 @@
 
 All notable changes to the Claude Code global configuration.
 
+## 2026-03-02 — GPT Researcher Fork + Submodule Architecture
+
+- Added: skills/gpt-researcher/ as git submodule (Tokyofloripa/gpt-researcher fork)
+- Added: README.md — architecture overview, submodule pattern, fork sync workflow
+- Synced: gpt-researcher fork main to upstream v3.4.2 (20 commits, zero conflicts)
+- Merged: feat/multi-agent-stderr-capture-v2 into fork main (PR #1)
+  - SKILL.md, scripts/multi_research.py, 12 reference docs, 25+ unit tests
+  - fd-level stderr+stdout capture, pipeline log parsing, human review gate
+- Restructured: skill files moved to fork repo root for submodule compatibility
+- Fixed: ai-image, last60days, temperature submodules reinitialized (clean .git pointers)
+- Updated: MANIFEST.md — added ai-image, temperature, gpt-researcher skills
+- Updated: .gitmodules — 4 submodules (was 3)
+- Disconnected: ~/.claude/ root from gpt-researcher fork, reconnected to lifeOS
+
 ## 2026-02-19 — Rename to last60days
 
 - Renamed: GitHub repo TokyoFloripa/uptodate → TokyoFloripa/last60days

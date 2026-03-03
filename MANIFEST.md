@@ -27,7 +27,11 @@ These files represent our personal infrastructure. Upgrades never touch them.
 | `pre-commit-hook.sh` | Git pre-commit secret + PII scanner | 2.0 |
 | `install.sh` | Bootstrap and verify setup | 1.0 |
 | `skills/last60days/` | Ultra-comprehensive multi-source research (submodule) | 4.2 |
+| `skills/ai-image/` | AI image generation — GPT, Grok, Nanobanana (submodule) | 1.0 |
+| `skills/temperature/` | Topic temperature measurement — 5 dimensions (submodule) | 1.0 |
+| `skills/gpt-researcher/` | GPT Researcher fork — multi-agent stderr capture (submodule) | 1.0 |
 | `shell/aliases.zsh` | Shell integration (aliases, worktree helpers) | 1.0 |
+| `README.md` | Architecture overview, submodule pattern, setup guide | 1.0 |
 
 ## SYSTEM — Third-Party (installed by install.sh, auto-updated)
 
